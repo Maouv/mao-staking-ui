@@ -68,11 +68,25 @@ export default function MAOStakingUI() {
 
   const autoApproveAndStake = async () => {
     try {
-      showToast("Approving...");
+      const amt = ethers.parseUnits(stakeAmount, 18);
       const mao = new ethers.Contract(maoAddress, tokenAbi, signer);
       const staking = new ethers.Contract(stakingAddress, stakingAbi, signer);
-      const amt = ethers.parseUnits(stakeAmount, 18);
-      await mao.approve(stakingAddress, amt);
+
+      const balance = await mao.balanceOf(address);
+      const allowance = await mao.allowance(address, stakingAddress);
+
+      console.log(">>> Pre-stake balance:", ethers.formatUnits(balance, 18));
+      console.log(">>> Pre-stake allowance:", ethers.formatUnits(allowance, 18));
+      console.log(">>> Stake amount:", stakeAmount);
+
+      if (balance.lt(amt)) {
+        return showToast("❌ Not enough MAO balance");
+      }
+      if (allowance.lt(amt)) {
+        showToast("Approving...");
+        await mao.approve(stakingAddress, amt);
+      }
+
       showToast("Staking...");
       await staking.stake(amt);
       showToast("✅ Stake successful");
