@@ -43,8 +43,8 @@ export default function MAOStakingUI() {
   const [reward, setReward] = useState("0");
   const [toast, setToast] = useState("");
 
-  const stakingAddress = "0xYourStakingContractAddress";
-  const maoAddress = "0xYourMAOTokenAddress";
+  const stakingAddress = "0x42bf653842AB6F40edcF353dA7F4DF7811023aa5";
+  const maoAddress = "0x46148378a6Eb3D879F051398Cb2d4e428e991C3C";
 
   const connectWallet = async () => {
     if (!window.ethereum) return alert("Please install MetaMask");
