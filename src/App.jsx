@@ -1,7 +1,17 @@
 import { useState, useEffect } from "react";
 import { ethers } from "ethers";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+const Button = ({ children, ...props }) => (
+  <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg" {...props}>
+    {children}
+  </button>
+);
+
+const Input = (props) => (
+  <input
+    className="border border-gray-300 px-3 py-2 rounded-md w-full"
+    {...props}
+  />
+);
 
 const stakingAbi = [
   "function stake(uint256 amount) external",
