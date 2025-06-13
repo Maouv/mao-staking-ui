@@ -68,6 +68,9 @@ export default function MAOStakingUI() {
 
   const autoApproveAndStake = async () => {
     try {
+      if (!stakeAmount || isNaN(stakeAmount) || Number(stakeAmount) <= 0) {
+        return showToast("❌ Invalid stake amount");
+      }
       const amt = ethers.parseUnits(stakeAmount, 18);
       const mao = new ethers.Contract(maoAddress, tokenAbi, signer);
       const staking = new ethers.Contract(stakingAddress, stakingAbi, signer);
@@ -75,24 +78,26 @@ export default function MAOStakingUI() {
       const balance = await mao.balanceOf(address);
       const allowance = await mao.allowance(address, stakingAddress);
 
-      console.log(">>> Pre-stake balance:", ethers.formatUnits(balance, 18));
-      console.log(">>> Pre-stake allowance:", ethers.formatUnits(allowance, 18));
+      console.log(">>> Balance:", ethers.formatUnits(balance, 18));
+      console.log(">>> Allowance:", ethers.formatUnits(allowance, 18));
       console.log(">>> Stake amount:", stakeAmount);
 
-      if (balance.lt(amt)) {
-        return showToast("❌ Not enough MAO balance");
-      }
+      if (balance.lt(amt)) return showToast("❌ Not enough MAO balance");
+
       if (allowance.lt(amt)) {
-        showToast("Approving...");
-        await mao.approve(stakingAddress, amt);
+        showToast("🔐 Approving...");
+        const tx = await mao.approve(stakingAddress, amt);
+        await tx.wait();
+        showToast("✅ Approve success");
       }
 
-      showToast("Staking...");
-      await staking.stake(amt);
+      showToast("⏳ Staking...");
+      const stakeTx = await staking.stake(amt);
+      await stakeTx.wait();
       showToast("✅ Stake successful");
       updateReward(address);
     } catch (err) {
-      console.error(err);
+      console.error("TX Error:", err);
       showToast("❌ Approve or stake failed");
     }
   };
@@ -153,3 +158,4 @@ export default function MAOStakingUI() {
     </div>
   );
 }
+
