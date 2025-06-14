@@ -30,14 +30,17 @@ export default function MAOStakingUI() {
 
   const stakingAddress = "0xbF20CC14264F15ce43d077c533992b5226FeB807";
 
-  useEffect(() => {
-    if (window.ethereum) {
-      const prov = new ethers.BrowserProvider(window.ethereum);
-      prov.getSigner().then(setSigner);
-      setProvider(prov);
-      prov.send("eth_requestAccounts", []).then((accounts) => setAddress(accounts[0]));
-    }
-  }, []);
+const connectWallet = async () => {
+  if (!window.ethereum) return alert("Please install MetaMask");
+  const prov = new ethers.BrowserProvider(window.ethereum);
+  await prov.send("eth_requestAccounts", []);
+  const signer = await prov.getSigner();
+  const addr = await signer.getAddress();
+  setProvider(prov);
+  setSigner(signer);
+  setAddress(addr);
+  updateReward(addr);
+};
 
   const updateReward = async () => {
     const staking = new ethers.Contract(stakingAddress, stakingAbi, provider);
