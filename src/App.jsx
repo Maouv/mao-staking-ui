@@ -62,20 +62,28 @@ export default function MAOStakingUI() {
     setReward(ethers.formatUnits(data.rewardDebt, 18));
   };
 
-  const stake = async () => {
-    try {
-      const amt = ethers.parseUnits(stakeAmount, 18);
-      const staking = new ethers.Contract(stakingAddress, stakingAbi, signer);
-      setStatus("Staking MON...");
-      const tx = await staking.stakeNative({ value: amt });
-      await tx.wait();
-      setStatus("✅ Staked!");
-      updateReward(address);
-    } catch (err) {
-      console.error(err);
-      setStatus("❌ Stake failed");
-    }
-  };
+const stake = async () => {
+  if (!signer) return setStatus("❌ Wallet not connected");
+  if (!stakeAmount || isNaN(stakeAmount) || Number(stakeAmount) <= 0) {
+    return setStatus("❌ Enter valid stake amount");
+  }
+
+  try {
+    const amt = ethers.parseUnits(stakeAmount, 18);
+    const balance = await provider.getBalance(address);
+    if (balance.lt(amt)) return setStatus("❌ Not enough MON");
+
+    const staking = new ethers.Contract(stakingAddress, stakingAbi, signer);
+    setStatus("⏳ Sending stake transaction...");
+    const tx = await staking.stakeNative({ value: amt });
+    await tx.wait();
+    setStatus("✅ Stake success!");
+    updateReward(address);
+  } catch (err) {
+    console.error(err);
+    setStatus("❌ Stake failed");
+  }
+};
 
   const withdraw = async () => {
     try {
